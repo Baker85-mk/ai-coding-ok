@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v3.0.0] - 2026-05-01
+
+### Why this release
+
+v3.0.0 marks the "plugin era" of ai-coding-ok. The core PDCA logic is unchanged; this release is a structural upgrade to make the skill installable via `/plugin install ai-coding-ok@claude-plugins-official`, while keeping the git-clone path fully working for Copilot/Cursor/OpenCode users.
+
+### Added
+
+- **`.claude-plugin/plugin.json`** — plugin manifest, enabling `/plugin install ai-coding-ok@claude-plugins-official` in Claude Code
+- **`skills/ai-coding-ok/SKILL.md`** — canonical English skill definition, loaded automatically by Claude Code when installed as a plugin; includes language detection (en/zh) for templates
+- **`templates/en/`** — full English template set (18 files) with `{{kebab-case-placeholders}}`; mirrors `templates/zh/` structure
+- **`README.md`** — English root README rewritten around PDCA positioning and plugin install; Chinese README moved to `README.zh.md`
+- **`README.zh.md`** — previous Chinese README preserved here
+- **`--lang en|zh` flag** — `install.sh` and `install.py` now accept `--lang` to choose template language (default: `en`)
+
+### Modified
+
+- **`templates/zh/`** — all Chinese templates moved here from `templates/`; version markers bumped to v3.0.0
+- **`SKILL.md`** (root) — updated to match `skills/ai-coding-ok/SKILL.md`; carries a contributor note to sync from `skills/` rather than editing directly
+- **`install.sh`** / **`install.py`** — `TEMPLATES_DIR` now points to `templates/$LANG`; interactive menu and log messages updated to recommend plugin install for Claude Code users
+- **All template version markers** — bumped from v2.2.0 to v3.0.0
+
+### Backward compatibility
+
+- Legacy git-clone users (`~/.claude/skills/ai-coding-ok/`) are **unaffected** — root `SKILL.md` still works as their entry point
+- `install.sh` / `install.py` still work without `--lang`; default is `en` (was previously the Chinese `templates/` root); **Chinese users should add `--lang zh`**
+- `templates/zh/` contains the same files as the old `templates/`, just moved
+
+---
+
 ## [v2.2.0] - 2026-04-27
 
 ### Added

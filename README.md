@@ -1,300 +1,214 @@
 # 🧠 ai-coding-ok
 
-> 一个可以直接安装的 **AI 编程记忆与护栏** skill，Claude Code、GitHub Copilot、OpenCode、Cursor 都能用。
->
-> 基于实战验证过的 [ai-coding-ok](https://github.com/Mark7766/ai-coding-ok) 框架，把"拷贝文件 + 手动改占位符"的繁琐流程，打包成一条命令 / 一个 slash。
+> **English** | [中文](README.zh.md)
+
+> **The PDCA memory loop for AI coding.**
+> superpowers gives Claude discipline for one session. ai-coding-ok gives Claude memory that stays accurate across 50 iterations.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Works with](https://img.shields.io/badge/Works%20with-Claude%20Code%20%7C%20Copilot%20%7C%20OpenCode%20%7C%20Cursor-blueviolet)](#)
-[![Version](https://img.shields.io/badge/Version-v2.2.0-blue)](#)
+[![Works with](https://img.shields.io/badge/Works%20with-Claude%20Code%20%7C%20Copilot%20%7C%20Cursor%20%7C%20OpenCode-blueviolet)](#)
+[![Version](https://img.shields.io/badge/Version-v3.0.0-blue)](#)
 
 ---
 
-## 🤔 解决什么问题？
+## The Problem
 
-写代码用 AI 的人都遇到过：
+You ship a feature with Claude. Three sessions later, Claude "fixes" a bug by silently deleting a constraint it added last week. By iteration 50, your codebase has invisible regressions everywhere.
 
-- 🧩 **AI 失忆**：换个会话/窗口就不知道你项目长什么样
-- 💥 **改一个，坏三个**：修一个 bug 顺手把别的功能删了
-- 🎯 **风格漂移**：AI 一会儿 PascalCase 一会儿 snake_case
-- 🔒 **越权操作**：AI 删了不该删的文件、改了不该改的配置
-- 🚧 **推广困难**：整套 ai-coding-ok 配置虽然有效，但手动拷贝 + 改占位符对普通用户门槛太高
+This isn't a prompt problem. It's a **memory problem with no feedback loop**.
 
-ai-coding-ok skill 把这一切打包：**一行命令装好，一句话描述需求，AI 自动填满所有配置**。
+Most AI tools (including [superpowers](https://github.com/obra/superpowers)) solve **single-session discipline** — plan before code, TDD, review. None of them solve **cross-session memory drift**.
 
 ---
 
-## ✨ v2.2.0 新特性
+## How ai-coding-ok Solves It
 
-### 🛡️ Claude Code 三道触发保险
+A four-stage **PDCA closed loop**, enforced on every task:
 
-之前 Claude Code 用户在**新会话** + **简短指令**（如「加个收入功能」）时，可能同时绕过 skill 自动调用和 AGENTS.md 启发式读取，导致 PDCA 漏触发。v2.2.0 通过两项修复彻底堵住这个窗口：
-
-1. **新增 `templates/CLAUDE.md`** — 内容是 `@AGENTS.md` import shim。Claude Code 启动时无条件加载项目根的 `CLAUDE.md`，顺着 import 直达 PDCA 强制指令，跟 Cursor 的 `alwaysApply: true` 等价。
-2. **重写 SKILL.md `description`** — 句首改为命令式 "USE THIS SKILL FIRST on every coding task..."，把高频触发词（feat / fix / refactor / 新功能 / 修复 / 重构）前置，把 INSTALL/UPGRADE 降为从属子句，显著提升 Claude 语义匹配命中率。
-
-现在 Claude Code 有三道独立保险：① CLAUDE.md 自动加载（最硬） → ② Skill description 命中 → ③ AGENTS.md 启发式读取（兜底）。
-
-### 🔄 install 流程同步
-
-`install.sh` / `install.py` 的冲突检查列表加入 `CLAUDE.md`；SKILL.md 的安装目录树和占位符替换文件清单也同步更新。
-
----
-
-## ✨ v2.1.0 新特性
-
-### 🌐 多平台支持扩展
-
-| 平台 | 安装命令 | 触发机制 |
-|------|---------|----------|
-| **Claude Code** | `bash install.sh --claude-code` | skill 自动调用 |
-| **OpenCode** | `bash install.sh --opencode` | 全局 AGENTS.md 注入触发指令 |
-| **GitHub Copilot** | `bash install.sh --copilot` | `copilot-instructions.md` 自动加载 |
-| **Cursor** | `bash install.sh --cursor` | `.cursor/rules/ai-coding-ok.mdc`（`alwaysApply: true`）|
-
-### 🔄 四种工作模式（v2.0 起）
-
-| 模式 | 触发条件 | 作用 |
-|------|---------|------|
-| **Mode A — Install** | 新项目 / 输入 "install ai-coding-ok" | 首次安装，拷贝模板 + 定制占位符 |
-| **Mode B — PDCA Plan** | 项目已有 `.github/agent/memory/` + 任意开发任务 | 任务开始前自动读取记忆文件 |
-| **Mode C — PDCA Act** | 任务完成时 | 自动更新 task-history / decisions-log |
-| **Mode D — Upgrade** | 输入 "upgrade ai-coding-ok" | 自动升级框架文件，保留项目定制内容 |
-
-### 🎯 PDCA 强制执行（v2.0 起）
-
-在 `AGENTS.md`、`copilot-instructions.md` 和 `.cursor/rules/ai-coding-ok.mdc` 顶部嵌入了强制指令，确保 AI **每次任务都执行 PDCA**：
-- 任务开始前：自动读取 4 个记忆文件
-- 任务结束后：自动更新记忆（不可跳过）
-
-### 🏷️ 版本标记
-
-所有模板文件都带版本标记（`<!-- ai-coding-ok: v2.2.0 -->`），支持自动化升级检测。
-
----
-
-## ⚡ 快速开始（30 秒）
-
-### Claude Code 用户
-
-```bash
-# 1. 安装 skill
-git clone https://github.com/Mark7766/ai-coding-ok ~/.claude/skills/ai-coding-ok
-
-# 2. 进入你的项目，打开 Claude Code
-cd your-project
-claude
-
-# 3. 在会话里输入
-/ai-coding-ok
+```
+  Plan          Do            Check         Act
+ ─────▶       ─────▶         ─────▶        ─────▶
+read         write          run           update
+memory       code +         tests,        memory
+files        tests          verify        files
+                            no
+                            regression
 ```
 
-Claude 会自动：
-1. 拷贝 16 个模板文件到你的项目
-2. 问你一句话："你想做一个什么东西？"
-3. 根据你这句话推断技术栈、架构、规范，**帮你把所有占位符填好**
-4. 写好第一条任务历史，PDCA 循环就地生效
+| Phase | What happens |
+|-------|--------------|
+| **Plan** | Claude reads `project-memory.md`, `decisions-log.md`, `task-history.md` before touching code |
+| **Do** | Code + tests in the same change |
+| **Check** | Tests run; regression in unrelated features is caught |
+| **Act** | Claude writes back to memory: `task-history.md` always; `decisions-log.md` on architecture change; `project-memory.md` on fact change |
 
-> 💡 v2.0 起，**PDCA 工作流自动执行** — 任务开始前自动读记忆，结束后自动写记忆，无需手动提醒。v2.1.0 新增 OpenCode 和 Cursor 支持。v2.2.0 增强 Claude Code 触发可靠性（CLAUDE.md import shim + skill description 重写）。
+The **Act** step is what most tools skip. Without it, your memory file is a snapshot that rots after 10 iterations because nobody updates it. With it, context stays accurate because every task closes the loop.
 
-### GitHub Copilot 用户
+---
 
-```bash
-# 1. clone
-git clone https://github.com/Mark7766/ai-coding-ok
+## Three-Tier Memory
 
-# 2. 进入你的项目，运行安装脚本
-cd your-project
-bash /path/to/ai-coding-ok/install.sh --copilot
+| Tier | File | Content | Update frequency |
+|------|------|---------|------------------|
+| Long-term | `project-memory.md` | Architecture, constraints, known issues | Rarely |
+| Mid-term | `decisions-log.md` | ADRs (why we chose X over Y) | On arch changes |
+| Short-term | `task-history.md` | Last 30 task summaries | Every task |
 
-# 3. 打开 Copilot Chat，把 scripts/customize-prompt.md 的内容粘贴进去
-#    Copilot 会自动替换所有占位符
+Iteration 50 reads the same three files iteration 1 read — but they have grown 50 entries of compounded context. That's the point.
+
+---
+
+## Install
+
+### Claude Code (recommended)
+
+```
+/plugin install ai-coding-ok@claude-plugins-official
 ```
 
-装好之后，Copilot 每次对话都会自动读取 `.github/copilot-instructions.md`，**PDCA 工作流、记忆系统、三级权限全部生效**。
+Then in any project, in Claude Code:
 
-### OpenCode 用户
-
-```bash
-# 1. 安装 skill（与 Claude Code 共用同一路径）
-git clone https://github.com/Mark7766/ai-coding-ok ~/.claude/skills/ai-coding-ok
-
-# 2. 进入你的项目，打开 OpenCode
-cd your-project
-opencode
-
-# 3. 在会话里输入
+```
 install ai-coding-ok
 ```
 
-> 💡 OpenCode 会自动从 `~/.claude/skills/` 加载技能，无需额外配置。
-> 如果遇到技能不自动触发，运行 `bash install.sh --opencode` 来更新全局 AGENTS.md。
+Claude will:
+1. Copy templates into your project
+2. Ask one question: *"In one sentence, what are you building?"*
+3. Infer your tech stack and fill all placeholders automatically
+4. Bootstrap the first task-history entry — PDCA loop is active immediately
 
-### Cursor 用户
+### Cursor / Copilot / OpenCode (script install)
 
 ```bash
-# 1. clone
 git clone https://github.com/Mark7766/ai-coding-ok
-
-# 2. 进入你的项目，运行安装脚本
 cd your-project
-bash /path/to/ai-coding-ok/install.sh --cursor
-
-# 2. 在 Cursor Agent 中输入
-install ai-coding-ok
+bash /path/to/ai-coding-ok/install.sh --cursor   # or --copilot / --opencode
 ```
 
-安装后，Cursor 会通过 `.cursor/rules/ai-coding-ok.mdc`（`alwaysApply: true`）在**每次会话**自动执行 PDCA 流程，无需手动触发。
+The templates auto-load via `.cursor/rules/ai-coding-ok.mdc` (Cursor), `.github/copilot-instructions.md` (Copilot), or `~/.config/opencode/AGENTS.md` (OpenCode).
 
 ---
 
-## 📦 它到底装了什么？
+## What gets installed in your project
 
 ```
-你的项目/
-├── AGENTS.md                          ← 🗺️  架构速查（AI 最先读）
-├── CLAUDE.md                          ← 🔗 Claude Code 自动加载 → @AGENTS.md
-├── .cursor/
-│   └── rules/
-│       └── ai-coding-ok.mdc           ← ⚡ Cursor 专属：alwaysApply PDCA 规则
+your-project/
+├── AGENTS.md                          # Architecture cheatsheet (AI reads first)
+├── CLAUDE.md                          # Claude Code auto-load shim → @AGENTS.md
+├── .cursor/rules/ai-coding-ok.mdc     # Cursor: alwaysApply PDCA rule
 └── .github/
-    ├── copilot-instructions.md        ← 📋 全局行为规则（Copilot 自动加载）
-    ├── project-metadata.yml           ← 🏷️  机器可读的项目元信息
-    ├── PULL_REQUEST_TEMPLATE.md       ← 📝 PR 模板（含记忆更新检查）
-    ├── ISSUE_TEMPLATE/                ← 🐛 Issue 模板
-    ├── workflows/                     ← 🤖 CI + 记忆更新提醒
+    ├── copilot-instructions.md        # Copilot: auto-loaded behavior rules
+    ├── project-metadata.yml           # Machine-readable project facts
+    ├── PULL_REQUEST_TEMPLATE.md       # PR template (memory-update checklist)
+    ├── ISSUE_TEMPLATE/                # Issue templates
+    ├── workflows/                     # CI + memory-update reminder
     └── agent/
-        ├── system-prompt.md           ← 🎭 Agent 人格 + PDCA 工作流
-        ├── coding-standards.md        ← 📏 编码规范
-        ├── workflows.md               ← 🔄 场景化工作流
-        ├── prompt-templates.md        ← 🧩 Prompt 模板库
+        ├── system-prompt.md           # Agent persona + PDCA workflow
+        ├── coding-standards.md        # Coding conventions
+        ├── workflows.md               # Scenario playbooks
+        ├── prompt-templates.md        # Prompt template library
         └── memory/
-            ├── project-memory.md      ← 🧠 长期记忆：项目事实
-            ├── decisions-log.md       ← 📝 中期记忆：技术决策 (ADR)
-            └── task-history.md        ← 📜 短期记忆：近 30 条任务
+            ├── project-memory.md      # 🧠 long-term: project facts
+            ├── decisions-log.md       # 📝 mid-term: ADRs
+            └── task-history.md        # 📜 short-term: last 30 tasks
 ```
 
 ---
 
-## 🧠 三层记忆系统
+## Pairs with superpowers
 
-| 层级 | 文件 | 内容 | 更新频率 |
-|------|------|------|---------|
-| 长期 | `project-memory.md` | 架构、约束、已知问题 | 很少 |
-| 中期 | `decisions-log.md` | ADR 格式的技术决策 | 架构变更时 |
-| 短期 | `task-history.md` | 近 30 条任务摘要 | 每次任务 |
+ai-coding-ok and [superpowers](https://github.com/obra/superpowers) solve different problems and compose cleanly:
 
-AI 每次开始工作**先读这三个文件**，每次结束**写回 task-history**，架构变了再更新另外两个。这就是 AI 跨会话保持上下文的秘诀。
+> **superpowers** brings per-session discipline.
+> **ai-coding-ok** brings cross-session memory.
 
----
-
-## 🔄 PDCA 工作流
+The combo flow:
 
 ```
-  Plan           Do            Check          Act
- ─────▶        ─────▶         ─────▶         ─────▶
-读记忆       写代码          跑测试         更新记忆
-理解意图     写测试          验回归         提交 PR
-出计划       自检            查安全         ...
+1. ai-coding-ok Mode B  (Plan: load memory)        ← every task starts here
+2. superpowers          (brainstorming → planning → execution)
+3. ai-coding-ok Mode C  (Act: write memory back)   ← every task ends here
 ```
 
-每次任务都走一遍，保证"修 bug 不破坏其他功能"有代码 + 记忆双重保障。
+See [`docs/superpowers-combo.md`](docs/superpowers-combo.md) for five real-world recipes.
 
 ---
 
-## 🤝 与 superpowers skill 组合使用（推荐）
+## How it differs from a hand-written AGENTS.md
 
-[`superpowers`](https://github.com/obra/superpowers) 擅长**发散思考、编排 sub-agent、深度研究**；
-ai-coding-ok 擅长**固化上下文、保证代码质量、跨会话持续**。
+A hand-written AGENTS.md is a snapshot. After 10 iterations it's stale because no one updates it. ai-coding-ok automates the **Act** step — Claude writes back to memory after every task, so the file stays alive.
 
-**一句话组合法**：
-
-> superpowers 想得深，ai-coding-ok 记得住。
-
-详见 [`docs/superpowers-combo.md`](docs/superpowers-combo.md) 的五个实战配方。
-
----
-
-## 📖 文档索引
-
-- [Claude Code 快速上手](docs/claude-code-quickstart.md)
-- [GitHub Copilot 快速上手](docs/copilot-quickstart.md)
-- [OpenCode 快速上手](docs/opencode-quickstart.md)
-- [Cursor 快速上手](docs/cursor-quickstart.md)
-- [与 superpowers 组合使用](docs/superpowers-combo.md)
-- [FAQ](docs/faq.md)
-- [SKILL.md](SKILL.md) — skill 本体（Claude Code 会读）
-- [CHANGELOG](CHANGELOG.md) — 版本变更记录
+| | Hand-written AGENTS.md | ai-coding-ok |
+|---|---|---|
+| Initial setup | Manual placeholders | One-sentence question, AI infers the rest |
+| Mid-term decisions | Lost (or in scattered PR descriptions) | Captured as ADRs in `decisions-log.md` |
+| Recent task context | Lost between sessions | Last 30 tasks in `task-history.md` |
+| Memory update | Manual (and forgotten) | Automated via PDCA Act phase |
+| Multi-tool support | One file per tool | One template, all tools auto-load |
 
 ---
 
-## 🔄 升级已安装的项目
+## Honest caveats
 
-### Claude Code 用户
+- The Act step depends on Claude actually following instructions to write back. ~95% reliability in real use; the 5% can be caught by `scripts/verify.sh` running in CI.
+- Memory files grow over time. `task-history.md` is capped at 30 entries by convention; `project-memory.md` should stay <500 lines or you lose the benefit (rotate old facts to ADRs).
+- ai-coding-ok is opinionated about file layout. If you have an existing `AGENTS.md` with hand-edits, you'll want to merge by hand on first install.
 
-在已安装 ai-coding-ok 的项目里：
+---
+
+## Upgrade
+
+In a project with ai-coding-ok already installed:
 
 ```
 upgrade ai-coding-ok
 ```
 
-Claude 会自动：检测版本 → 识别变更 → 合并框架更新（保留你的项目定制内容）→ 更新版本标记
+Claude detects your installed version, lists the framework changes, and merges them in — preserving your project-specific customizations.
 
-### Copilot 用户
-
-把 [`scripts/upgrade-prompt.md`](scripts/upgrade-prompt.md) 的内容粘贴到 Copilot Chat 执行。
+For Copilot/Cursor users, see [`scripts/upgrade-prompt.md`](scripts/upgrade-prompt.md).
 
 ---
 
-## 🚀 命令速查
+## Verify
 
-| 命令 | 作用 |
-|------|------|
-| `bash install.sh` | 交互式安装（问你装到哪里） |
-| `bash install.sh --claude-code` | 装成 Claude Code skill |
-| `bash install.sh --opencode` | 装成 OpenCode skill + 更新全局 AGENTS.md |
-| `bash install.sh --copilot` | 把模板装到当前 Copilot 项目 |
-| `bash install.sh --cursor` | 把模板 + `.cursor/rules/` 装到当前 Cursor 项目 |
-| `bash install.sh --copilot --target /path/to/proj` | 装到指定项目 |
-| `bash install.sh --dry-run` | 预览要做什么，不真的写 |
-| `bash install.sh --force` | 覆盖已存在的文件 |
-| `python install.py ...` | 同上，跨平台版本（含 Windows） |
-| `bash scripts/verify.sh` | 检查当前项目装得对不对 + 占位符是否都填了 |
-
----
-
-## 🧪 测试 & 验证
-
-安装后可以随时运行：
+After install, check that everything wired up correctly:
 
 ```bash
-bash <(curl -sL https://raw.githubusercontent.com/Mark7766/ai-coding-ok/main/scripts/verify.sh)
-# 或本地
 bash /path/to/ai-coding-ok/scripts/verify.sh
 ```
 
-它会：
-- ✅ 检查 16 个必需文件是否齐全
-- ⚠️ 统计还有多少 `{{占位符}}` 没填
-- 🎯 退出码：0 = 完美，1 = 缺文件，2 = 占位符没填完
+Exit codes: `0` = clean, `1` = missing files, `2` = unfilled placeholders.
 
 ---
 
-## 🧭 设计哲学
+## Documentation
 
-1. **一次安装，跨工具通用** — 不给 Claude/Copilot/Cursor 各自写一套配置
-2. **让 AI 定制 AI 的配置** — 用户只说一句"想做什么"，剩下 AI 自己推断
-3. **安全默认** — 不覆盖用户已有文件，除非 `--force`
-4. **可审计** — 所有安装过的动作都能从 `task-history.md` 里回溯
-
----
-
-## 🤲 贡献
-
-欢迎提 Issue / PR。改模板改到 `templates/` 下，改 skill 行为改 `SKILL.md` 和 `scripts/`，改文档改 `docs/`。
+- [Claude Code quickstart](docs/claude-code-quickstart.md)
+- [Copilot quickstart](docs/copilot-quickstart.md)
+- [Combo with superpowers](docs/superpowers-combo.md)
+- [FAQ](docs/faq.md)
+- [SKILL.md](skills/ai-coding-ok/SKILL.md) — canonical skill definition
+- [CHANGELOG](CHANGELOG.md)
 
 ---
 
-## 📄 许可
+## Design philosophy
 
-[MIT](LICENSE) — 免费商用。
+1. **One install, every tool** — Claude Code, Copilot, Cursor, OpenCode share the same template
+2. **Let AI customize AI's config** — user says one sentence; the AI infers the rest
+3. **Safe by default** — never overwrites existing files unless `--force`
+4. **Auditable** — every install/upgrade leaves a trace in `task-history.md`
+
+---
+
+## Contributing
+
+Issues and PRs welcome. Edit templates in `templates/{en,zh}/`. Edit skill behavior in `skills/ai-coding-ok/SKILL.md`. Edit docs in `docs/`.
+
+---
+
+## License
+
+[MIT](LICENSE) — free for commercial use.

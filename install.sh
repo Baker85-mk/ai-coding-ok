@@ -3,25 +3,30 @@
 # Works for Claude Code, GitHub Copilot, OpenCode, and Cursor users.
 #
 # Usage:
-#   bash install.sh                   # interactive
-#   bash install.sh --claude-code     # install as ~/.claude/skills/ai-coding-ok
-#   bash install.sh --opencode        # install to ~/.config/opencode/skills/ + global AGENTS.md
-#   bash install.sh --copilot         # copy templates into current directory
-#   bash install.sh --cursor          # copy templates + .cursor/rules/ into current directory
+#   bash install.sh                          # interactive
+#   bash install.sh --claude-code            # install as ~/.claude/skills/ai-coding-ok
+#   bash install.sh --opencode               # install to ~/.config/opencode/skills/ + global AGENTS.md
+#   bash install.sh --copilot                # copy templates into current directory
+#   bash install.sh --cursor                 # copy templates + .cursor/rules/ into current directory
 #   bash install.sh --copilot --target /path/to/project
 #   bash install.sh --cursor  --target /path/to/project
-#   bash install.sh --force           # overwrite existing files
-#   bash install.sh --dry-run         # show what would happen
+#   bash install.sh --lang zh                # use Chinese templates (default: en)
+#   bash install.sh --force                  # overwrite existing files
+#   bash install.sh --dry-run                # show what would happen
 #
 # Exit codes: 0 OK, 1 user abort, 2 conflict without --force, 3 other error.
+#
+# NOTE: For Claude Code users, the recommended install is:
+#   /plugin install ai-coding-ok@claude-plugins-official
+# This script is primarily for Copilot, Cursor, and OpenCode users.
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TEMPLATES_DIR="$SCRIPT_DIR/templates"
 
 MODE=""
 TARGET=""
+LANG_CHOICE="en"
 FORCE="0"
 DRY_RUN="0"
 
@@ -40,6 +45,7 @@ while [[ $# -gt 0 ]]; do
     --opencode)             MODE="opencode" ;;
     --copilot)              MODE="copilot" ;;
     --cursor)               MODE="cursor" ;;
+    --lang)                 LANG_CHOICE="$2"; shift ;;
     --target)               TARGET="$2"; shift ;;
     --force|-f)             FORCE="1" ;;
     --dry-run|-n)           DRY_RUN="1" ;;
@@ -52,10 +58,19 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
-[[ -d "$TEMPLATES_DIR" ]] || die "templates/ not found at $TEMPLATES_DIR. Run from the skill root."
+[[ "$LANG_CHOICE" == "en" || "$LANG_CHOICE" == "zh" ]] \
+  || die "Invalid --lang value '$LANG_CHOICE'. Use 'en' or 'zh'."
+
+TEMPLATES_DIR="$SCRIPT_DIR/templates/$LANG_CHOICE"
+[[ -d "$TEMPLATES_DIR" ]] \
+  || die "templates/$LANG_CHOICE/ not found at $TEMPLATES_DIR. Run from the skill root."
 
 # Interactive mode selection
 if [[ -z "$MODE" ]]; then
+  echo ""
+  echo "ai-coding-ok installer"
+  echo "  Tip: Claude Code users can run instead:  /plugin install ai-coding-ok@claude-plugins-official"
+  echo ""
   echo "Select how to install ai-coding-ok:"
   echo "  1) Claude Code skill  — install to ~/.claude/skills/ai-coding-ok"
   echo "  2) OpenCode skill     — install to ~/.config/opencode/skills/ + global AGENTS.md"
@@ -93,6 +108,7 @@ install_claude() {
   # Copy everything except .git
   (cd "$SCRIPT_DIR" && find . -maxdepth 1 -mindepth 1 ! -name '.git' -exec cp -r {} "$dest/" \;)
   log "Done. In Claude Code, run:  /ai-coding-ok"
+  log "Tip: next time, use /plugin install ai-coding-ok@claude-plugins-official for easier upgrades."
 }
 
 install_opencode() {
@@ -139,7 +155,7 @@ install_opencode() {
 install_copilot() {
   local dest="${TARGET:-$(pwd)}"
   dest="$(cd "$dest" && pwd)"
-  log "Installing Copilot templates -> $dest"
+  log "Installing Copilot templates ($LANG_CHOICE) -> $dest"
 
   # Conflict check
   local -a conflicts=()
@@ -171,7 +187,7 @@ install_copilot() {
 install_cursor() {
   local dest="${TARGET:-$(pwd)}"
   dest="$(cd "$dest" && pwd)"
-  log "Installing Cursor rules -> $dest"
+  log "Installing Cursor rules ($LANG_CHOICE) -> $dest"
 
   # Conflict check
   local -a conflicts=()

@@ -3,16 +3,21 @@
 
 Equivalent to install.sh, but runs on Windows PowerShell / cmd as well.
 
+NOTE: For Claude Code users, the recommended install is:
+    /plugin install ai-coding-ok@claude-plugins-official
+This script is primarily for Copilot, Cursor, and OpenCode users.
+
 Usage:
-    python install.py                      # interactive
-    python install.py --claude-code        # install as ~/.claude/skills/ai-coding-ok
-    python install.py --opencode           # install to ~/.config/opencode/skills/ + global AGENTS.md
-    python install.py --copilot            # copy templates into the current dir
-    python install.py --cursor             # copy templates + .cursor/rules/ into the current dir
+    python install.py                        # interactive
+    python install.py --claude-code          # install as ~/.claude/skills/ai-coding-ok
+    python install.py --opencode             # install to ~/.config/opencode/skills/ + global AGENTS.md
+    python install.py --copilot              # copy templates into the current dir
+    python install.py --cursor               # copy templates + .cursor/rules/ into the current dir
     python install.py --copilot --target C:/path/to/project
     python install.py --cursor  --target C:/path/to/project
-    python install.py --force              # overwrite existing files
-    python install.py --dry-run            # preview only
+    python install.py --lang zh              # use Chinese templates (default: en)
+    python install.py --force                # overwrite existing files
+    python install.py --dry-run              # preview only
 """
 
 from __future__ import annotations
@@ -24,7 +29,6 @@ import sys
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-TEMPLATES_DIR = SCRIPT_DIR / "templates"
 CONFLICT_PATHS_COPILOT = ("AGENTS.md", "CLAUDE.md", ".github/copilot-instructions.md", ".github/agent")
 CONFLICT_PATHS_CURSOR  = ("AGENTS.md", "CLAUDE.md", ".cursor/rules/ai-coding-ok.mdc", ".github/agent")
 
@@ -36,6 +40,13 @@ def log(msg: str) -> None:
 def die(msg: str, code: int = 3) -> None:
     print(f"[ai-coding-ok] ERROR: {msg}", file=sys.stderr)
     sys.exit(code)
+
+
+def get_templates_dir(lang: str) -> Path:
+    templates_dir = SCRIPT_DIR / "templates" / lang
+    if not templates_dir.is_dir():
+        die(f"templates/{lang}/ not found at {templates_dir}. Run from the skill root.")
+    return templates_dir
 
 
 def copy_tree(src: Path, dst: Path, overwrite: bool, dry_run: bool) -> None:
@@ -80,6 +91,7 @@ def install_claude(args: argparse.Namespace) -> None:
         else:
             shutil.copy2(item, dest / item.name)
     log("Done. In Claude Code, run:  /ai-coding-ok")
+    log("Tip: next time, use /plugin install ai-coding-ok@claude-plugins-official for easier upgrades.")
 
 
 def install_opencode(args: argparse.Namespace) -> None:
@@ -132,11 +144,9 @@ def install_opencode(args: argparse.Namespace) -> None:
 
 
 def install_copilot(args: argparse.Namespace) -> None:
-    if not TEMPLATES_DIR.is_dir():
-        die(f"templates/ not found at {TEMPLATES_DIR}. Run from the skill root.")
-
+    templates_dir = get_templates_dir(args.lang)
     dest = Path(args.target).resolve() if args.target else Path.cwd()
-    log(f"Installing Copilot templates -> {dest}")
+    log(f"Installing Copilot templates ({args.lang}) -> {dest}")
 
     conflicts = [p for p in CONFLICT_PATHS_COPILOT if (dest / p).exists()]
     if conflicts and not args.force:
@@ -146,17 +156,15 @@ def install_copilot(args: argparse.Namespace) -> None:
         print("Re-run with --force to overwrite.", file=sys.stderr)
         sys.exit(2)
 
-    copy_tree(TEMPLATES_DIR, dest, overwrite=args.force, dry_run=args.dry_run)
+    copy_tree(templates_dir, dest, overwrite=args.force, dry_run=args.dry_run)
     log("Templates installed.")
     log("Next: paste scripts/customize-prompt.md into Copilot Chat to fill in placeholders.")
 
 
 def install_cursor(args: argparse.Namespace) -> None:
-    if not TEMPLATES_DIR.is_dir():
-        die(f"templates/ not found at {TEMPLATES_DIR}. Run from the skill root.")
-
+    templates_dir = get_templates_dir(args.lang)
     dest = Path(args.target).resolve() if args.target else Path.cwd()
-    log(f"Installing Cursor rules -> {dest}")
+    log(f"Installing Cursor rules ({args.lang}) -> {dest}")
 
     conflicts = [p for p in CONFLICT_PATHS_CURSOR if (dest / p).exists()]
     if conflicts and not args.force:
@@ -166,14 +174,16 @@ def install_cursor(args: argparse.Namespace) -> None:
         print("Re-run with --force to overwrite.", file=sys.stderr)
         sys.exit(2)
 
-    copy_tree(TEMPLATES_DIR, dest, overwrite=args.force, dry_run=args.dry_run)
+    copy_tree(templates_dir, dest, overwrite=args.force, dry_run=args.dry_run)
     log("Templates installed.")
     log("Next: in Cursor Agent, type: install ai-coding-ok")
     log("      Cursor will fill in all placeholders based on your project.")
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="ai-coding-ok installer")
+    parser = argparse.ArgumentParser(
+        description="ai-coding-ok installer. Claude Code users: prefer /plugin install ai-coding-ok@claude-plugins-official"
+    )
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--claude-code", "--claude", action="store_true", dest="claude")
     mode.add_argument("--opencode", action="store_true")
@@ -181,11 +191,15 @@ def main() -> None:
     mode.add_argument("--cursor", action="store_true")
     mode.add_argument("--both", action="store_true")
     parser.add_argument("--target", help="Target project directory for --copilot / --cursor")
+    parser.add_argument("--lang", choices=["en", "zh"], default="en",
+                        help="Template language: en (default) or zh")
     parser.add_argument("--force", "-f", action="store_true", help="Overwrite existing files")
     parser.add_argument("--dry-run", "-n", action="store_true", help="Preview actions without writing")
     args = parser.parse_args()
 
     if not (args.claude or args.opencode or args.copilot or args.cursor or args.both):
+        print("\nai-coding-ok installer")
+        print("  Tip: Claude Code users can run instead:  /plugin install ai-coding-ok@claude-plugins-official\n")
         print("Select installation mode:")
         print("  1) Claude Code skill  — install to ~/.claude/skills/ai-coding-ok")
         print("  2) OpenCode skill     — install to ~/.config/opencode/skills/ + global AGENTS.md")

@@ -1,4 +1,4 @@
-# ai-coding-ok: v2.2.0
+# ai-coding-ok: v3.0.0
 name: CI
 
 on:
@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # {{修改为你的语言版本}}
+  # {{set this to your language version}}
   LANGUAGE_VERSION: "3.12"
 
 jobs:
@@ -22,7 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # {{根据你的语言和包管理工具修改以下步骤}}
+      # {{adjust the following steps for your language and package manager}}
       - name: Set up environment
         run: echo "TODO: set up language and dependencies"
 
@@ -49,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [lint, type-check]
     env:
-      # {{配置测试环境变量}}
+      # {{configure test environment variables}}
       DATABASE_URL: "sqlite:///test.db"
       DEBUG: "true"
     steps:
@@ -80,4 +80,3 @@ jobs:
 
       - name: Verify app can start
         run: echo "TODO: verify build"
-

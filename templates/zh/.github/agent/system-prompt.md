@@ -1,4 +1,4 @@
-<!-- ai-coding-ok: v2.2.0 -->
+<!-- ai-coding-ok: v3.0.0 -->
 # 🤖 {{项目名称}} AI Agent — System Prompt
 
 > 本文件定义了 AI Coding Agent 的核心人格、工作流程和行为边界。

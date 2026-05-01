@@ -1,4 +1,4 @@
-<!-- ai-coding-ok: v2.2.0 -->
+<!-- ai-coding-ok: v3.0.0 -->
 # CLAUDE.md
 
 > Claude Code 自动加载本文件。它通过 `@` 语法导入项目级 AGENTS.md，
