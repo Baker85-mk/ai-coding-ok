@@ -1,4 +1,4 @@
-<!-- ai-coding-ok: v3.0.0 -->
+<!-- ai-coding-ok: v3.0.1 -->
 <!-- ⛔ MANDATORY: AI Agent MUST execute these steps for EVERY request -->
 
 ## ⚠️ 强制执行：PDCA 工作流
@@ -153,7 +153,7 @@
 
 ## 📝 输出格式要求
 
-Agent 完成任务时，输出应包含：
+Agent 完成任务时，输出**必须**包含以下所有小节。缺少任意小节视为不合规。
 
 ```markdown
 ## 变更摘要
@@ -164,6 +164,14 @@ Agent 完成任务时，输出应包含：
 
 ## 验证方式
 - 如何验证这次变更是正确的
+
+## 记忆更新（⚠️ 必填，PDCA Act 阶段）
+> 本小节是 Act 阶段的输出证明，不可省略。
+> 即使没有任何更新，也必须写明原因。
+
+- task-history.md：✅ 已更新 TASK-XXX / ⏭️ 跳过（原因：纯问答，无代码变更）
+- decisions-log.md：✅ 已新增 ADR-XXX / ⏭️ 无架构决策变更
+- project-memory.md：✅ 已更新 [具体章节] / ⏭️ 无项目事实变化
 
 ## 后续建议
 - 如果有需要后续跟进的事项

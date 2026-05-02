@@ -1,4 +1,4 @@
-<!-- ai-coding-ok: v3.0.0 -->
+<!-- ai-coding-ok: v3.0.1 -->
 <!-- ⛔ MANDATORY: AI Agent MUST execute these steps for EVERY request -->
 
 ## ⚠️ Mandatory: PDCA Workflow
@@ -153,7 +153,7 @@ You are the **full-stack AI development engineer** for {{project-name}}. You als
 
 ## 📝 Output Format
 
-When the agent finishes a task, the response should contain:
+When the agent finishes a task, the response **must** include all of the following sections. Omitting any section is non-compliant.
 
 ```markdown
 ## Change Summary
@@ -164,6 +164,14 @@ When the agent finishes a task, the response should contain:
 
 ## Verification
 - How to verify the change is correct
+
+## Memory Updates (⚠️ Required — PDCA Act phase)
+> This section is proof that the Act phase ran. It cannot be omitted.
+> Even if nothing was updated, state the reason.
+
+- task-history.md: ✅ Updated TASK-XXX / ⏭️ Skipped (reason: pure Q&A, no code change)
+- decisions-log.md: ✅ Added ADR-XXX / ⏭️ No architecture decision change
+- project-memory.md: ✅ Updated [specific section] / ⏭️ No project fact change
 
 ## Follow-ups
 - Anything that needs follow-up work

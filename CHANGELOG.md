@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v3.0.1] - 2026-05-03
+
+### Fixed
+
+- **`templates/zh/.github/copilot-instructions.md`** — Output format section changed from "应包含" (should contain) to "**必须**包含所有小节，缺少任意小节视为不合规"; added mandatory `## 记忆更新（⚠️ 必填）` section with task-history / decisions-log / project-memory checklist
+- **`templates/en/.github/copilot-instructions.md`** — Output format changed from "should contain" to "**must** include all of the following sections. Omitting any section is non-compliant"; added mandatory `## Memory Updates (⚠️ Required)` section
+- **`templates/zh/.github/agent/system-prompt.md`** — Phase 4 Act annotated as "⚠️ 不可跳过"; added mandatory memory-update output structure and defined the only legitimate conditions to skip Act
+- **`templates/en/.github/agent/system-prompt.md`** — Phase 4 Act annotated as "⚠️ must not skip"; same structural enforcement added
+
+### Root cause
+
+The Act phase was described only as a task-list item but was never embedded into the response structure that AI models actually generate. Models finishing the code implementation would naturally end the response without triggering memory updates. The fix makes the `## Memory Updates` section a **required output section** — it cannot be missing from a response, so the Act phase cannot be silently skipped.
+
+---
+
 ## [v3.0.0] - 2026-05-01
 
 ### Why this release
