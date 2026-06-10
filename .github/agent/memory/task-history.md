@@ -37,3 +37,12 @@
 - **变更文件**：templates/zh/CLAUDE.md, templates/en/CLAUDE.md, templates/zh/AGENTS.md, templates/en/AGENTS.md, templates/zh/.github/copilot-instructions.md, templates/en/.github/copilot-instructions.md, templates/zh/.claude/settings.local.json（新）, templates/en/.claude/settings.local.json（新）, SKILL.md, install.sh, 全部模板版本标记, CLAUDE.md（根）, AGENTS.md（根）, .github/copilot-instructions.md（根）, .claude/settings.local.json（根，加 hooks）, .github/agent/memory/project-memory.md, .github/agent/memory/task-history.md
 - **注意事项**：Stop hook 的 {{SOURCE_DIR_PATTERN}} 在模板中保留为占位符，由 AI 安装时按项目实际源码目录填充。settings.json 与 settings.local.json 冲突风险已在文档和安装日志中警示。
 
+---
+
+### [TASK-003] 提交 v3.1.0 并推送到远程仓库
+- **日期**：2026-06-10
+- **类型**：chore
+- **摘要**：将 v3.1.0 全部变更（五层防御体系 + zh/en 模板同步 + self-dogfooding 安装文件 + hooks 配置文档）git add → commit → push 到 origin/master（github.com:Mark7766/ai-coding-ok.git）。41 files changed, 2207 insertions, 41 deletions。
+- **变更文件**：全部 41 个文件（22 modified + 18 new + 1 new doc）
+- **注意事项**：push 前确认 project-memory.md 约束1（push 需用户明确许可）合规。后续开发者将基于此 commit 继续工作。
+
